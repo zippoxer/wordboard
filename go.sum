@@ -1,0 +1,10 @@
+github.com/dgryski/go-pcgr v0.0.0-20190219145045-9a7ede0ca611 h1:ZmWYkcFCJGYQKmGRcPEY/6QsA/1ea5RACx9B2fbbE9c=
+github.com/dgryski/go-pcgr v0.0.0-20190219145045-9a7ede0ca611/go.mod h1:ztV/u9hqJRBCT0P03v0Ueol7unBefCKL+paOoIZkR88=
+github.com/lazybeaver/xorshift v0.0.0-20170702203709-ce511d4823dd h1:TfmftEfB1zJiDTFi3Qw1xlbEbfJPKUhEDC19clfBMb8=
+github.com/lazybeaver/xorshift v0.0.0-20170702203709-ce511d4823dd/go.mod h1:qXyNSomGEqu0M7ewNl3CLgle09PFHk8++5NrBWCz7+Q=
+github.com/mattn/go-runewidth v0.0.4 h1:2BvfKmzob6Bmd4YsL0zygOqfdFnK7GR4QL06Do4/p7Y=
+github.com/mattn/go-runewidth v0.0.4/go.mod h1:LwmH8dsx7+W8Uxz3IHJYH5QSwggIsqBzpuz5H//U1FU=
+github.com/olekukonko/tablewriter v0.0.1 h1:b3iUnf1v+ppJiOfNX4yxxqfWKMQPZR5yoh8urCTFX88=
+github.com/olekukonko/tablewriter v0.0.1/go.mod h1:vsDQFd/mU46D+Z4whnwzcISnGGzXWMclvtLoiIKAKIo=
+github.com/paulbellamy/ratecounter v0.2.0 h1:2L/RhJq+HA8gBQImDXtLPrDXK5qAj6ozWVK/zFXVJGs=
+github.com/paulbellamy/ratecounter v0.2.0/go.mod h1:Hfx1hDpSGoqxkVVpBi/IlYD7kChlfo5C6hzIHwPqfFE=

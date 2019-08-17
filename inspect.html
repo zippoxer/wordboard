@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Wordboard Inspect</title>
+
+    <style></style>
+
+    <script>
+      const colors = [
+        "#0081EB",
+        "#4CE827",
+        "#FFE700",
+        "#FA8100",
+        "#F62880",
+        "#A926BB"
+      ];
+
+      class Board {
+        constructor(dump) {
+          this.width = dump.Board.Width;
+          this.height = dump.Board.Height;
+          this.data = dump.Board.Data;
+
+          this.words = dump.WordSet;
+        }
+
+        cellInfo(x, y) {
+          for (const wordIndex in this.words) {
+            const word = this.words[wordIndex];
+            for (const point of word.Path) {
+              if (point[0] == x && point[1] == y) {
+                return {
+                  wordIndex: wordIndex,
+                  color: colors[wordIndex % colors.length]
+                };
+              }
+            }
+          }
+
+          return null;
+        }
+
+        render() {
+          const $board = document.createElement("div");
+          $board.classList.add("board");
+
+          for (let x = 0; x < this.width; x++) {
+            const $row = document.createElement("div");
+            $row.classList.add("row");
+
+            for (let y = 0; y < this.height; y++) {
+              const $container = document.createElement("div");
+              $container.classList.add("cell-container");
+
+              const $cell = document.createElement("div");
+              $cell.classList.add("cell");
+              $container.append($cell);
+
+              if (this.data[x][y] === "\u0000") {
+                $cell.classList.add("empty");
+              } else {
+                const $span = document.createElement("span");
+                $span.textContent = this.data[x][y];
+                $cell.append($span);
+
+                const cellInfo = this.cellInfo(x, y);
+                $cell.classList.add("word-" + cellInfo.wordIndex);
+                $container.onmouseenter = () => {
+                  for (const $elem of document.querySelectorAll(
+                    ".word-" + cellInfo.wordIndex
+                  )) {
+                    $elem.classList.add("active");
+                  }
+                };
+                $container.onmouseleave = () => {
+                  for (const $elem of document.querySelectorAll(
+                    ".word-" + cellInfo.wordIndex
+                  )) {
+                    $elem.classList.remove("active");
+                  }
+                };
+
+                const $bg = document.createElement("div");
+                $bg.classList.add("background");
+                $bg.style.backgroundColor = cellInfo.color;
+                $cell.append($bg);
+              }
+
+              $row.append($container);
+            }
+
+            $board.append($row);
+          }
+
+          return $board;
+        }
+      }
+
+      function render() {
+        try {
+          const dump = JSON.parse(
+            document.querySelector(".render-form textarea").value
+          );
+          const board = new Board(dump);
+          document.querySelector(".render-container").append(board.render());
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", render);
+    </script>
+
+    <style>
+      html,
+      body {
+        font-family: Arial, Helvetica, sans-serif;
+        direction: rtl;
+      }
+
+      .container {
+        padding-top: 60px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+      }
+
+      .board {
+        display: flex;
+        flex-direction: column;
+        margin-top: 20px;
+        border-radius: 5px;
+        box-shadow: 0px 0px 8px 0px rgba(0, 0, 0, 0.25);
+      }
+
+      .board .row {
+        display: flex;
+        flex-direction: row;
+      }
+      .board .row:first-child {
+        margin-top: -2px;
+      }
+      .board .row:last-child {
+        margin-bottom: -2px;
+      }
+
+      .board .row .cell-container {
+        padding: 1px;
+      }
+
+      .board .row .cell {
+        width: 40px;
+        height: 40px;
+        border: solid 1px transparent;
+        background-color: #e6e6e6;
+        border-radius: 4px;
+        font-size: 26px;
+        font-weight: 900;
+        color: #555;
+        transition: all 0.3s ease-out;
+        cursor: default;
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        position: relative;
+      }
+      .board .row .cell:first-child {
+        margin-right: 0;
+      }
+      .board .row .cell:last-child {
+        margin-left: 0;
+      }
+
+      .board .row .cell.active {
+        background-color: #fff;
+        border-color: #333;
+        color: #333;
+      }
+      .board .row .cell.active .background {
+        opacity: 0.2;
+      }
+
+      .board .row .cell .background {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+        opacity: 0.15;
+        transform: all 0.3s ease-out;
+      }
+
+      .board .row .cell span {
+        z-index: 2;
+      }
+
+      .board .row .cell.empty {
+        background-color: #f2f2f2;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <form class="render-form" onsubmit="render(); return false">
+        <textarea placeholder="Paste a dump..." oninput="render()"></textarea>
+      </form>
+
+      <div class="render-container"></div>
+    </div>
+  </body>
+</html>
