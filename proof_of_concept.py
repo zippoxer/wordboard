@@ -1,5 +1,7 @@
+from __future__ import annotations
 from dataclasses import dataclass
-from typing import List
+from typing import List, Iterator
+from copy import copy, deepcopy
 import random
 from tabulate import tabulate
 
@@ -17,35 +19,37 @@ class Rect:
 
 
 class Board:
-    width: int
-    height: int
-
-    def __init__(self, width: int, height: int):
+    def __init__(self, width: int, height: int, chars: List[List[str]] = None):
         self.width = width
         self.height = height
-        self.clear()
+
+        if chars:
+            self.chars = chars
+        else:
+            self.clear()
 
     def clear(self):
-        self.chars = [[None for x in range(self.height)]
-                      for y in range(self.width)]
+        self.chars = [[None for y in range(self.height)]
+                      for x in range(self.width)]
+
+    def clone(self) -> Board:
+        return Board(self.width, self.height, chars=deepcopy(self.chars))
 
     # Scans an area for instances of char
     # and returns a list of their locations.
-    def scan(self, char: str, area: Rect = None) -> List[Point]:
+    def scan(self, char: str, area: Rect = None) -> Iterator[Point]:
         if not area:
             area = Rect(
                 Point(0, 0),
                 Point(self.width-1, self.height-1)
             )
 
-        instances = []
         for x in range(area.min.x, area.max.x+1):
             for y in range(area.min.y, area.max.y+1):
                 if self.chars[x][y] == char:
-                    instances.append(Point(x, y))
-        return instances
+                    yield Point(x, y)
 
-    def scan_adjacent(self, char: str, slot: Point) -> List[Point]:
+    def scan_adjacent(self, char: str, slot: Point) -> Iterator[Point]:
         area = Rect(
             Point(
                 max(slot.x - 1, 0),
@@ -57,12 +61,9 @@ class Board:
             )
         )
 
-        instances = []
-        for x in range(area.min.x, area.max.x+1):
-            for y in range(area.min.y, area.max.y+1):
-                if self.chars[x][y] == char and not (slot.x == x and slot.y == y):
-                    instances.append(Point(x, y))
-        return instances
+        for p in self.scan(char, area):
+            if not (slot.x == p.x and slot.y == p.y):
+                yield slot
 
 
 class Filler:
@@ -84,7 +85,7 @@ class Filler:
 
     def __insert_word(self, word: str) -> List[Point]:
         # Find a random empty slot to insert the word at.
-        empty_slots = self.board.scan(None)
+        empty_slots = list(self.board.scan(None))
         if not empty_slots:
             return False
 
@@ -97,7 +98,7 @@ class Filler:
 
             # Find all adjacent empty slots and choose
             # a random one to insert the next letter at.
-            empty_slots = self.board.scan_adjacent(None, slot)
+            empty_slots = list(self.board.scan_adjacent(None, slot))
             if not empty_slots:
                 return None
 
@@ -136,21 +137,33 @@ class Validator:
         return False
 
 
+charset = 'אבגדהוזחטיךכלםמןנסעףפץצקרשת'
 board = Board(5, 5)
-words = ["מה", "מצב", "מותק", "איך", "אתה", "מרגיש"]
+words = ["שלומ", "מתוק", "מה", "איתך"]
 
 while True:
     board.clear()
 
-    filler = Filler(board)
-    paths = filler.fill(words)
+    paths = Filler(board).fill(words)
     if not paths:
         continue
 
-    validator = Validator(board)
-    if not validator.validate(words, paths):
+    if not Validator(board).validate(words, paths):
         continue
+
+    # Add noise.
+    while True:
+        noisy_board = board.clone()
+        for slot in noisy_board.scan(None):
+            noisy_board.chars[slot.x][slot.y] = random.choice(charset)
+
+        if Validator(noisy_board).validate(words, paths):
+            break
+
+    board = noisy_board
 
     break
 
-print(tabulate(board.chars, tablefmt="grid"))
+table = [[board.chars[x][y] for x in range(board.width)]
+         for y in range(board.height)]
+print(tabulate(table, tablefmt="grid"))
